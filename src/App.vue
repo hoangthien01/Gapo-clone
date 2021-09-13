@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <navbar></navbar>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -19,6 +20,7 @@ export default {
   font-family: Segoe UI, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
 }
 
 * {

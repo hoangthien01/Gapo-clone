@@ -12,19 +12,19 @@
         </div>
       </div>
       <div class="navbar-main">
-        <div class="navbar-main__item active">
+        <div class="navbar-main__item active"  @click="$router.push('/')">
           <i class="fal fa-home-alt"></i>
           <span>Trang chủ</span>
         </div>
-        <div class="navbar-main__item">
+        <div class="navbar-main__item" @click="$router.push('/group')">
           <i class="fal fa-users"></i>
           <span>Nhóm</span>
         </div>
-        <div class="navbar-main__item">
+        <div class="navbar-main__item"  @click="$router.push('/video')">
           <i class="fal fa-tv"></i>
           <span>Video</span>
         </div>
-        <div class="navbar-main__item">
+        <div class="navbar-main__item" @click="$router.push('/chat')">
           <i class="fal fa-comment-alt"></i>
           <span>Chat</span>
         </div>
@@ -154,7 +154,7 @@ export default {
     .navbar-left {
       display: flex;
       align-items: center;
-      width: 25%;
+      width: 30%;
 
       &__logo {
         width: 98px;
@@ -197,7 +197,7 @@ export default {
     .navbar-main {
       display: flex;
       height: 100%;
-      width: 50%;
+      width: 40%;
       align-items: center;
       justify-content: center;
 
@@ -228,8 +228,9 @@ export default {
 
     .navbar-right {
       display: flex;
-      width: 25%;
-      padding-left: 40px;
+      width: 30%;
+      padding-right: 20px;
+      justify-content: flex-end;
 
       &__friends, &__noti, .user__image {
         width: 40px;
@@ -247,7 +248,7 @@ export default {
         font-size: 20px;
       }
       &__user {
-        flex: 1;
+        /* flex: 1; */
         display: flex;
         position: relative;
 
@@ -276,7 +277,7 @@ export default {
           position: absolute;
           z-index: 99;
           top: 50px;
-          right: 13px;
+          right: 0px;
           background: #fff;
           width: 243px;
           border: 1px solid #e5e5e5;
