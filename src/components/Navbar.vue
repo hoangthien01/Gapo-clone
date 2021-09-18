@@ -12,19 +12,19 @@
         </div>
       </div>
       <div class="navbar-main">
-        <div class="navbar-main__item active"  @click="$router.push('/')">
+        <div class="navbar-main__item "  @click="$router.push('/')" :class="{active:this.currentRoute=== 'Home'}">
           <i class="fal fa-home-alt"></i>
           <span>Trang chủ</span>
         </div>
-        <div class="navbar-main__item" @click="$router.push('/group')">
+        <div class="navbar-main__item" @click="$router.push('/login')" :class="{active:this.currentRoute=== 'Group'}">
           <i class="fal fa-users"></i>
           <span>Nhóm</span>
         </div>
-        <div class="navbar-main__item"  @click="$router.push('/video')">
+        <div class="navbar-main__item"  @click="$router.push('/video')" :class="{active:currentRoute=== 'Video'}">
           <i class="fal fa-tv"></i>
           <span>Video</span>
         </div>
-        <div class="navbar-main__item" @click="$router.push('/chat')">
+        <div class="navbar-main__item" @click="$router.push('/chat')" :class="{active:currentRoute=== 'Chat'}">
           <i class="fal fa-comment-alt"></i>
           <span>Chat</span>
         </div>
@@ -111,7 +111,8 @@ export default {
     return {
       profileMenu : false,
       notificationDialog :false,
-      friendsDialog : false
+      friendsDialog : false,
+      currentRoute : 'Home'
     }
   },
   methods: {
@@ -129,6 +130,12 @@ export default {
       this.friendsDialog = !this.friendsDialog
       this.notificationDialog =false
       this.profileMenu = false
+    }
+  },
+   watch: {
+    $route() {
+      this.currentRoute = this.$route.name;
+      console.log(this.currentRoute)
     }
   }
 }
@@ -356,6 +363,7 @@ export default {
       box-sizing: border-box;
       box-shadow: 0 0 3px darkkhaki;
       border-radius: 4px;
+      z-index: 999;
 
       hr {
         border-top: 1px solid #e5e5e5;
@@ -412,6 +420,7 @@ export default {
       box-sizing: border-box;
       border-radius: 4px;
       box-shadow: 0 0 3px darkkhaki;
+      z-index: 999;
     }
   }
 }

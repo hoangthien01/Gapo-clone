@@ -1,33 +1,22 @@
 <template>
   <div class="home">
-    <div class="home-sidebar">
-      <h2>Trang chủ</h2>
-      <ul>
-        <li @click="$router.push('/khampha')">
-          <span>Khám phá</span>
-        </li>
-        <li>
-          <span>Theo dõi</span>
-        </li>
-        <li>
-          <span>Tìm bạn bè</span>
-        </li>
-        <li>
-          <span>Trang của bạn</span>
-        </li>
-        <li>
-          <button class="create-page"><span>+</span> Tạo trang</button>
-        </li>
-      </ul>
-      <div class="sidebar-policy">
-        <div >
-          <span>Điều khoản sử dụng</span>
-          <span>Hỗ trợ khách hàng</span>
-        </div>
-        <span>Gapo © 2020</span>
-      </div>
-    </div>
+    <Sidebar></Sidebar>
     <div class="home-main">
+      <div class="warraper">
+        <div class="home-main-head">
+          <div class="avatar">
+            <img src="" alt="" srcset="">
+          </div>
+          <button>Đăng bài viết</button>
+          <i class="fas fa-image"></i>
+        </div>
+        <div class="home-main-fad">
+          <h4>Xu hướng nổi bật</h4>
+        </div>
+        <div class="home-main-content">
+
+        </div>
+      </div>
     </div>
     <div class="home-account">
       <div class="home-account-head">
@@ -47,6 +36,7 @@
 </template>
 
 <script>
+import Sidebar from '../components/Home/Sidebar.vue'
 export default {
   name: 'Home',
   data () {
@@ -54,7 +44,9 @@ export default {
 
     }
   },
-
+  components : {
+    Sidebar
+  }
 }
 </script>
 
@@ -64,88 +56,67 @@ export default {
   padding-top: 72px;
   display: flex;
 
-  .home-sidebar{
-    width: 23%;
-    position: relative;
-
-    h2 {
-      font-size: 21px;
-      padding: 8px 16px 0;
-      margin-bottom: 16px;
-    }
-
-    ul {
-      list-style: none;
-
-      li {
-        padding: 10px 16px ;
-        cursor: pointer;
-        width: 100%;
-        height: 48px;
-
-        &:hover {
-          background-color: #f5f5f5;
-        }
-
-        .create-page {
-          background-color: #ecf7e7;
-          border-color: #ecf7e7;
-          color: #6fbe44;
-          font-size: 16px;
-          width: 100%;
-          padding: 8px 12px;
-          line-height: 22px;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-
-          &:hover {
-            background-color: #d5edca;
-            border-color: #ceeac1;
-          }
-
-          span {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            background-color: rgb(111, 190, 73);
-            border-radius: 50%;
-            color: #fff;
-            margin-right: 8px;
-          }
-        }
-      }
-    }
-
-    .sidebar-policy {
-      bottom: 0;
-      position: absolute;
-      padding: 0 16px 25px;
-
-      div {
-        display: flex;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
-      }
-
-      span{
-        display: block;
-        overflow: hidden;
-        margin-right: 15px;
-        line-height: 28px;
-        color: #808080;
-        cursor: pointer;
-      }
-    }
-  }
-
   .home-main {
     width: 54%;
     background-color: #F2F2F2;
+
+    .warraper {
+      width: 100%;
+      max-width: 500px;
+      margin: auto;
+
+      .home-main-head {
+        margin: 8px 0 15px;
+        background-color: #fff;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        padding: 12px;
+
+        .avatar {
+          width: 35px;
+          height: 35px;
+          border-radius: 50%;
+          margin: auto;
+          cursor: pointer;
+          background-color: #6fbe49;
+        }
+
+        button {
+          padding: 8px 12px;
+          flex: 1;
+          margin: 0 10px;
+          background-color: #ecf7e7;
+          border: none;
+          outline: none;
+          cursor: pointer;
+          font-size: 16px;
+          border-radius: 5px;
+          color: #6fbe44;
+
+          &:hover {
+            background-color: #d5edca;
+          }
+        }
+
+        i {
+          font-size: 22px;
+          color: #6fbe44;
+          cursor: pointer;
+        }
+      }
+
+      .home-main-fad {
+        background-color: #fff;
+        padding: 16px;
+        border-radius: 5px;
+
+        h4 {
+          font-weight: 500;
+          font-size: 15px;
+        }
+      }
+    }
   }
 
   .home-account {

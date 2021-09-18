@@ -5,7 +5,8 @@ import Home from '../view/Home.vue'
 import Video from '../view/Video.vue'
 import Group from '../view/Group.vue'
 import Chat from '../view/Chat.vue'
-import Khampha from '../view/Khampha.vue'
+import Login from '../view/Login.vue'
+
 Vue.use(VueRouter);
 
 const routes = [
@@ -31,8 +32,13 @@ const routes = [
   },
   {
     path: "/khampha",
-    name: "Khampha",
-    component: Khampha
+    name: "Home",
+    component: Home
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: Login
   },
 ];
 
