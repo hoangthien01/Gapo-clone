@@ -147,6 +147,7 @@ export default {
       .account-search {
         margin-top: 20px;
         position: relative;
+        z-index: -1;
 
         i {
           position: absolute;

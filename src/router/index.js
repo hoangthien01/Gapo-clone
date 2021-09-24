@@ -6,14 +6,18 @@ import Video from '../view/Video.vue'
 import Group from '../view/Group.vue'
 import Chat from '../view/Chat.vue'
 import Login from '../view/Login.vue'
+import Register from "../view/Register.vue"
+import notFound from '../view/404.vue'
+import Personal from '../view/Personal.vue'
 
 Vue.use(VueRouter);
 
 const routes = [
+  { path: '/', redirect: { name: 'Login' }},
   {
-    path: "/",
+    path: "/home",
     name: "Home",
-    component: Home,
+    component: Home
   },
   {
     path: "/video",
@@ -38,8 +42,29 @@ const routes = [
   {
     path: "/login",
     name: "Login",
-    component: Login
+    component: Login,
+    meta: {
+      layout: 'unauth'
+    }
   },
+  {
+    path: "/register/:step",
+    name: "Register",
+    component: Register,
+    meta: {
+      layout: 'unauth'
+    }
+  },
+  {
+    path: "/:userId",
+    name: "Personal",
+    component: Personal
+  },
+  {
+    path: "*",
+    name : "404",
+    component: notFound
+  }
 ];
 
 const router = new VueRouter({

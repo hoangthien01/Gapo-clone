@@ -38,18 +38,18 @@
         </div>
         <div class="navbar-right__user" @click="toggleProfileMenu">
           <div class="user__image">
-            <img src="" alt="" srcset="">
+            <img src="../assets/default-user-avatar.png" alt="" srcset="">
           </div>
           <div class="user__name">
-            <span>Hoàng Thiện</span>
+            <span>{{this.$store.state.userName}}</span>
             <i class="fas fa-sort-down"></i>
           </div>
           <div class="user__setting" v-show="profileMenu">
-              <div class="user__info">
+              <div class="user__info" @click="$router.push('/' + $store.state.userUID )">
                 <div class="user__info-image">
-                  <img src="" alt="" srcset="">
+                  <img src="../assets/default-user-avatar.png" alt="" srcset="">
                 </div>
-                <h3>Hoàng Thiện</h3>
+                <h3>{{this.$store.state.userName}}</h3>
                 <p>Trang cá nhân</p>
               </div>
               <hr>
@@ -72,7 +72,7 @@
                 </li>
               </ul>
               <hr>
-              <div class="user__logout">
+              <div class="user__logout" @click="signOut">
                 <img src="../assets/icon-logout.svg" alt="" srcset="">
                 <span>Đăng xuất</span>
               </div>
@@ -105,6 +105,8 @@
 </template>
 
 <script>
+import firebase from 'firebase/app'
+import "firebase/auth"
 export default {
   name: 'Navbar',
   data () {
@@ -130,6 +132,11 @@ export default {
       this.friendsDialog = !this.friendsDialog
       this.notificationDialog =false
       this.profileMenu = false
+    },
+    signOut() {
+      firebase.auth().signOut();
+      this.$router.push('/login')
+      // window.location.reload();
     }
   },
    watch: {
@@ -150,6 +157,8 @@ export default {
   left: 0;
   padding: 0 16px;
   box-shadow: inset 0 -1px 0 #ececec;
+  z-index: 999;
+  background-color: #fff;
 
   .navbar {
     display: flex;
@@ -261,6 +270,14 @@ export default {
 
         .user__image {
           margin-right: 10px;
+          width: 40px;
+          height: 40px;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            object-fit: cover;
+          }
         }
 
         .user__name {
@@ -302,8 +319,14 @@ export default {
               width: 80px;
               height: 80px;
               border-radius: 50%;
-              margin: auto;
+              margin: 0 auto 10px;
               background-color: #6fbe49;
+              overflow: hidden;
+
+              img {
+                width: 100%;
+                object-fit: cover;
+              }
             }
             p {
               font-size: 13px;

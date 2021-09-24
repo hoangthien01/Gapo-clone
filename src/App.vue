@@ -1,42 +1,42 @@
 <template>
   <div id="app">
-    <navbar v-show="showNav"></navbar>
-    <router-view></router-view>
+     <component :is="layout">
+      <router-view/>
+    </component>
   </div>
 </template>
 
 <script>
-import navbar from './components/Navbar.vue'
+import firebase from 'firebase/app'
+import "firebase/auth"
+import defaultLayout from "./layout/default.vue";
+import unauthLayout from "./layout/unauth.vue";
 export default {
   name: 'App',
   components: {
-    navbar
+    defaultLayout,
+    unauthLayout,
+  },
+  computed: {
+    layout() {
+      if (this.$route.meta.layout == "unauth") {
+        return "unauthLayout";
+      }
+      return "defaultLayout";
+    },
+  },
+  created() {
+    firebase.auth().onAuthStateChanged((user) => {
+      this.$store.commit("updateUser", user)
+      if(user) {
+        this.$store.dispatch("getCurrentUser")
+      }
+    });
   },
   data () {
     return {
-      showNav : null
     }
   },
-  methods: {
-    checkActiveNav() {
-      if(this.$route.name == "Login") {
-        this.showNav = false
-        return
-      }
-      this.showNav = true
-      return
-    }
-  },
-  created() {
-    this.checkActiveNav()
-    
-
-  },
-  watch: {
-    $route() {
-      this.checkActiveNav()
-    }
-  }
 }
 </script>
 
