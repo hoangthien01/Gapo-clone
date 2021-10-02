@@ -26,6 +26,7 @@ export default {
     },
   },
   created() {
+    this.$store.dispatch('getPost');
     firebase.auth().onAuthStateChanged((user) => {
       this.$store.commit("updateUser", user)
       if(user) {

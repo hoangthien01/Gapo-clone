@@ -4,7 +4,7 @@ import Vuex from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '../firebase/index'
-
+import post from './module/post'
 
 Vue.use(Vuex)
 
@@ -14,10 +14,15 @@ export default new Vuex.Store({
 
     userUID : '',
     userName: '',
+    userPhotoURL  : '',
+    coverImageURL : '',
     phoneNumber : '',
     passWord : '',
     dateOfBirth: '',
     gender: '',
+
+    posts: []
+
   },
   getters: {
    
@@ -41,6 +46,12 @@ export default new Vuex.Store({
     setPhoneNumber(state, payload) {
       state.phoneNumber = payload;
     },
+    setUserPhotoURL(state, payload) {
+      state.userPhotoURL = payload;
+    },
+    setCoverImageURL(state, payload) {
+      state.coverImageURL = payload;
+    },
     updateUser(state, payload) {
       state.user = payload
     },
@@ -51,6 +62,8 @@ export default new Vuex.Store({
       state.dateOfBirth = doc.data().dateOfBirth
       state.gender = doc.data().gender
       state.phoneNumber = doc.data().phoneNumber
+      state.userPhotoURL = doc.data().userPhotoURL
+      state.coverImageURL = doc.data().coverImageURL
     },
   
    
@@ -61,10 +74,38 @@ export default new Vuex.Store({
       const dbResults = await dataBase.get()
       commit("setProfileInfo", dbResults)
       // commit("setProfileInitials")
-      console.log(this.state.user)
     },
-    
+    async getPost({ state }) {
+      db.collection("posts")
+      .onSnapshot(
+        (querySnapshot) => {
+          state.posts = []
+          querySnapshot.forEach((doc) => {
+              state.posts.push(doc.data());
+          });
+      })
+      // const dataBase = await db.collection('posts').orderBy('date', 'desc');
+      // const dbResults = await dataBase.get();
+      // await dbResults.forEach((doc) => {
+      //   // if (!state.posts.some(post => post.blogID === doc.id)) {
+      //     const data = {
+      //       postID: doc.data().postID,
+      //       text : doc.data().text,
+      //       avatar : doc.data().avatar,
+      //       photoURL: doc.data().photoURL,
+      //       date: doc.data().date,
+      //       userUID : doc.data().userUID,
+      //       userName: doc.data().userName,
+      //     };
+      //     state.posts.push(data);
+      //   // }
+      //   console.log(state.posts)
+      //   // state.postLoaded = true;
+      // });
+    },
 
   },
-  modules: {}
+  modules: {
+    post
+  }
 })

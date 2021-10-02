@@ -1,19 +1,23 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-
 import Home from '../view/Home.vue'
 import Video from '../view/Video.vue'
 import Group from '../view/Group.vue'
 import Chat from '../view/Chat.vue'
 import Login from '../view/Login.vue'
 import Register from "../view/Register.vue"
-import notFound from '../view/404.vue'
+import notFound from '../view/notfound.vue'
 import Personal from '../view/Personal.vue'
 
 Vue.use(VueRouter);
 
 const routes = [
   { path: '/', redirect: { name: 'Login' }},
+  {
+    path: "/404/notfound-user",
+    name : "notFound",
+    component: notFound
+  },
   {
     path: "/home",
     name: "Home",
@@ -61,10 +65,11 @@ const routes = [
     component: Personal
   },
   {
-    path: "*",
-    name : "404",
-    component: notFound
-  }
+    path: "/:userId/:tab",
+    name: "Personal",
+    component: Personal
+  },
+ 
 ];
 
 const router = new VueRouter({

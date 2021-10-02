@@ -46,14 +46,18 @@
       </div>
     </div>
     <div class="profile-right">
+      <news></news>
     </div>
   </div>
 </template>
 
 <script>
+import News from '../../components/News.vue'
 export default {
   name: 'TimeLine',
-
+  components: {
+    News
+  }
 }
 </script>
 
@@ -182,6 +186,9 @@ export default {
 
     .profile-right {
       width: 60%;
+      margin-top: -8px;
+
+     
     }
   }
 </style>

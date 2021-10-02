@@ -2,21 +2,7 @@
   <div class="home">
     <Sidebar></Sidebar>
     <div class="home-main">
-      <div class="warraper">
-        <div class="home-main-head">
-          <div class="avatar">
-            <img src="" alt="" srcset="">
-          </div>
-          <button>Đăng bài viết</button>
-          <i class="fas fa-image"></i>
-        </div>
-        <div class="home-main-fad">
-          <h4>Xu hướng nổi bật</h4>
-        </div>
-        <div class="home-main-content">
-
-        </div>
-      </div>
+      <News :posts="this.posts"></News>
     </div>
     <div class="home-account">
       <div class="home-account-head">
@@ -37,6 +23,7 @@
 
 <script>
 import Sidebar from '../components/Home/Sidebar.vue'
+import News from '../components/News.vue'
 export default {
   name: 'Home',
   data () {
@@ -45,8 +32,13 @@ export default {
     }
   },
   components : {
-    Sidebar
-  }
+    Sidebar,News
+  },
+  computed: {
+    posts () {
+      return this.$store.state.posts
+    }
+  },
 }
 </script>
 
@@ -59,63 +51,6 @@ export default {
   .home-main {
     width: 54%;
     background-color: #F2F2F2;
-
-    .warraper {
-      width: 100%;
-      max-width: 500px;
-      margin: auto;
-
-      .home-main-head {
-        margin: 8px 0 15px;
-        background-color: #fff;
-        border-radius: 3px;
-        display: flex;
-        align-items: center;
-        padding: 12px;
-
-        .avatar {
-          width: 35px;
-          height: 35px;
-          border-radius: 50%;
-          margin: auto;
-          cursor: pointer;
-          background-color: #6fbe49;
-        }
-
-        button {
-          padding: 8px 12px;
-          flex: 1;
-          margin: 0 10px;
-          background-color: #ecf7e7;
-          border: none;
-          outline: none;
-          cursor: pointer;
-          font-size: 16px;
-          border-radius: 5px;
-          color: #6fbe44;
-
-          &:hover {
-            background-color: #d5edca;
-          }
-        }
-
-        i {
-          font-size: 22px;
-          color: #6fbe44;
-          cursor: pointer;
-        }
-      }
-
-      .home-main-fad {
-        background-color: #fff;
-        padding: 16px;
-        border-radius: 5px;
-
-        h4 {
-          font-weight: 500;
-          font-size: 15px;
-        }
-      }
     }
   }
 
@@ -173,5 +108,5 @@ export default {
     }
 
   }
-}
+
 </style>

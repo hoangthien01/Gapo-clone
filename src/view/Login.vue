@@ -6,8 +6,8 @@
         <p>Số điện thoại</p>
         <vue-tel-input v-model="phoneNumber" v-bind="bindProps"></vue-tel-input>
         <p class="wrongMsg">{{ this.wrongMsg }}</p>
-        <button class="btn continue-btn" id="log-in" @click="sendCaptcha" :style="[ this.phoneNumber !== '' ? {backgroundColor:'#6FBE49'} : '']">Tiếp tục</button>
-        <button class="btn facebook-btn">Đăng nhập với Facebook</button>
+        <button class="btn continue-btn" id="log-in" @click="signInWithPhoneNumber" :style="[ this.phoneNumber !== '' ? {backgroundColor:'#6FBE49'} : '']">Tiếp tục</button>
+        <button class="btn facebook-btn" @click="signInWithFacebook">Đăng nhập với Facebook</button>
       </div>
 
       <!-- password form -->
@@ -66,27 +66,35 @@ export default {
       set(payload) {
         this.$store.commit("setPhoneNumber", payload);
       },
+    },
+    userPhotoURL: {
+      get() {
+        return this.$store.state.userPhotoURL;
+      },
+      set(payload) {
+        this.$store.commit("setUserPhotoURL", payload);
+      },
     }
   },
   methods: {
     visibleAccountForm () {
       this.isPassWordForm = false
     },
-    async sendCaptcha() {
-
-       firebase.auth().useDeviceLanguage()         
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('log-in',{
-          'size':'invisible',
-          'callback':(response) => {
-            console.log(response)
-          }
-        })   
+    async signInWithPhoneNumber() {
+      firebase.auth().useDeviceLanguage()         
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('log-in',{
+        'size':'invisible',
+        'callback':(response) => {
+          console.log(response)
+        }
+      })   
 
       console.log(this.phoneNumber)
       await db.collection("users").where("phoneNumber","==",this.phoneNumber).get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             this.$store.commit("updateUser",doc.data())
+            this.$store.commit("setProfileInfo",doc)
             console.log(doc.data())
         });
       })
@@ -96,7 +104,7 @@ export default {
       if (this.$store.state.user != null) {
         var testVerificationCode = "123456";
         firebase.auth().settings.appVerificationDisabledForTesting = true;
-        firebase.auth().signInWithPhoneNumber(this.phoneNumber, window.recaptchaVerifier)
+        await firebase.auth().signInWithPhoneNumber(this.phoneNumber, window.recaptchaVerifier)
           .then(function (confirmationResult) {
             return confirmationResult.confirm(testVerificationCode)
           }).catch(function () {
@@ -114,6 +122,40 @@ export default {
           this.wrongMsg = error.message
         })
       }
+    },
+    async signInWithFacebook() {
+      var provider = new firebase.auth.FacebookAuthProvider();
+      provider.addScope('user_birthday, email,user_photos')
+      firebase.auth().useDeviceLanguage();
+      firebase
+        .auth()
+        .signInWithPopup(provider)
+        .then((result) => {
+          /** @type {firebase.auth.OAuthCredential} */
+          // var credential = result.credential;
+          var user = result.user;
+          var additionalUserInfo = result.additionalUserInfo.profile
+          console.log(user)
+          console.log(result)
+          // var accessToken = credential.accessToken;
+          // this.userPhotoURL = user.photoURL + "?height=500&access_token=" + accessToken ;
+          this.userPhotoURL = additionalUserInfo.picture.data.url
+          const dataBase = db.collection("users").doc(firebase.auth().currentUser.uid);
+          if(dataBase.get().userUID == ''){
+            dataBase.set({
+              userUID: user.uid,
+              userName: user.displayName,
+              userEmail : user.email,
+              dateOfBirth : additionalUserInfo.birthday,
+              userPhotoURL: this.userPhotoURL,
+              coverImageURL: require('../assets/default-cover.jpg')
+            });  
+          }
+          this.$router.push('/home')
+        })
+        .catch((error) => {
+          console.log(error.message)
+        });
     },
     signIn() {
       if(this.passWord == this.$store.state.passWord) {

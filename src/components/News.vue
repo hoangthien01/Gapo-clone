@@ -1,13 +1,674 @@
 <template>
-  
+  <div class="warraper">
+    <div class="home-main-head">
+      <div class="avatar">
+        <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
+      </div>
+      <button class="create-btn" @click="() => this.activeCreatePost = true">Đăng bài viết</button>
+      <i class="fas fa-image"></i>
+      <div class="overlay" @click="() => {this.activeCreatePost = false}" v-show="activeCreatePost"></div>
+      <div class="create-post" v-show="activeCreatePost">
+        <div class="create-post-head">
+          <div class="user-image">
+            <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
+          </div>
+          <div>
+            <p class="user-name">{{this.$store.state.userName}}</p>
+            <button class="access-permission">
+              <i class="fas fa-globe-asia"></i>
+              <span>Công khai</span>
+              <i class="fas fa-sort-down"></i>
+              <div class="option-list">
+                <div class="option-item">
+                  <span class="radio-input"></span>
+                  <p >
+                   <i class="fas fa-globe-asia"></i>
+                   Công Khai
+                  </p>
+                </div>
+                <div class="option-item">
+                  <span class="radio-input"></span>
+                  <p >
+                   <i class="fas fa-user-friends"></i>
+                   Bạn bè
+                  </p>
+                </div>
+                <div class="option-item">
+                  <span class="radio-input"></span>
+                  <p>
+                   <i class="fas fa-lock-alt"></i>
+                   Chỉ mình tôi
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+          <div class="create-post-exit" @click="() => this.activeCreatePost = false">
+            <i class="fal fa-times-circle"></i>
+          </div>
+        </div>
+        <div class="create-post-main">
+          <textarea class="text-area" cols="100%" rows="8" placeholder="Bạn muốn chia sẻ điều gì?" v-model="text"></textarea>
+          <div class="create-post-action">
+            <div class="action-item">
+              <span >Aa</span>
+              <img src="../assets/smile.svg" alt="" srcset="">
+            </div>
+            <div class="action-item" @click="$refs.inputImage.click()">
+              <img src="../assets/picture-video.svg" alt="" srcset="">
+              <input type="file" ref="inputImage" style="display:none"  @change="photoURLSelected">
+              <span>Ảnh/Video</span>
+            </div>
+             <div class="action-item">
+              <img src="../assets/livestream-camera.svg" alt="" srcset="">
+              <span>Livestream</span>
+            </div>
+             <div class="action-item">
+              <img src="../assets/icon-ask.svg" alt="" srcset="">
+              <span >Hỏi đáp</span>
+            </div>
+          </div>
+          <button class="btn create-post-share" @click="postStatus" >Chia sẻ</button>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="home-main-fad">
+      <h4>Xu hướng nổi bật</h4>
+    </div> -->
+    <div class="home-main-content">
+      <div class="post-item" v-for="(post,index) in  posts" :key="index">
+        <div class="post-item__head">
+          <div class="user-image">
+            <img :src="post.avatar" alt="" srcset="">
+          </div>
+          <div>
+            <p class="user-name" >{{post.userName}}</p>
+            <p class="time">{{new Date(post.date).toLocaleString("en-us", { dateStyle: "long" })}}</p>
+          </div>
+          <div class="setting">
+            <i class="far fa-ellipsis-h"></i>
+          </div>
+        </div>
+        <div class="post-item__content">
+          <p>{{post.text}}</p>
+        </div>
+        <div class="post-item__attachment" v-show="post.photoURL != ''">
+          <img :src="post.photoURL" alt="" srcset="">
+        </div>
+        <div class="post-item__stats" v-show="post.numberComments != 0 || post.liked != 0">
+          <div class="react">
+              <div class="react-image"><img src="../assets/react/like-circle.svg" alt="" srcset=""></div>
+              <div class="react-image"><img src="../assets/react/haha-reaction.svg" alt="" srcset=""></div>
+              <div class="react-image"><img src="../assets/react/sad-reaction.svg" alt="" srcset=""></div>
+              <span class="quantity">{{post.liked}}</span>
+          </div>
+          <div class="number">
+            <div class="number-comments">
+              <span >{{post.numberComments}} bình luận</span>
+            </div>
+            <div class="number-seen">
+              <span >1.1k lượt xem</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-item__action">
+          <div class="item" @click="likePost(post)" 
+            :class="{active: post.listUserLiked.indexOf($store.state.userUID) != -1}"
+          >
+            <i class="fal fa-thumbs-up"></i>
+            <span>Thích</span>
+          </div>
+          <div class="item">
+            <i class="fal fa-comment-alt"></i>
+            <span >Bình luận</span>
+          </div>
+          <div class="item">
+            <i class="fal fa-share"></i>
+            <span >Chia sẻ</span>
+          </div>
+        </div>
+        <div class="post-item__comments">
+
+        </div>
+        <div class="comment">
+          <div class="user-image">
+            <img :src="post.avatar" alt="" srcset="">
+          </div>
+          <div class="input-form">
+            <p class="input" role="textbox" contenteditable 
+              @keyup.enter ="sendComment(post,index)"
+              @keydown.enter.prevent
+              ref= "input"
+            > </p>
+            <div class="action">
+              <i class="fal fa-smile"></i>
+              <i class="fal fa-camera"></i>
+              <img src="../assets/react/sticker.svg" alt="" srcset="">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+import firebase from 'firebase/app'
+// import firebase from 'firebase/app'
+import "firebase/auth";
+import db from '../firebase/index'
 export default {
-  name :'News'
+  name : 'News',
+  data () {
+    return {
+      activeCreatePost : false,
+      text : '',
+      photoURL : '',
+    }
+  },
+  props : [
+    'posts'
+  ],
+  methods: {
+    // onInput(event) {
+    //   const value = event.target.innerText;
+    //   this.text = value;
+    // },
+    async postStatus() {
+      const timestamp = await Date.now();
+      const dataBase = await db.collection("posts").doc();
+      await dataBase.set({
+        postID :  dataBase.id,
+        avatar : this.$store.state.userPhotoURL,
+        userUID : this.$store.state.userUID,
+        userName : this.$store.state.userName,
+        date : timestamp,
+        text: this.text,
+        photoURL: this.photoURL,
+        liked: 0,
+        listUserLiked: [],
+        comments: [],
+        numberComments: 0,
+      });
+      this.activeCreatePost = false
+    },
+    photoURLSelected (e) {
+      const image = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(image);
+      reader.onload = e =>{
+        this.photoURL = e.target.result;
+      }
+    },
+    async likePost(post) {
+      const dataBase = await db.collection("posts").doc(post.postID);
+      if(post.listUserLiked.indexOf(this.$store.state.userUID)) {
+        await dataBase.update({
+          liked : post.liked +1,
+          listUserLiked: firebase.firestore.FieldValue.arrayUnion(this.$store.state.userUID),
+        });
+        } else {
+          await dataBase.update({
+            liked : post.liked -1,
+            listUserLiked : firebase.firestore.FieldValue.arrayRemove(this.$store.state.userUID)
+          });
+        }
+    },
+    async sendComment (post,num) {
+      
+      this.text = this.$refs.input[num].textContent
+      const dataBase = await db.collection("posts").doc(post.postID);
+      await dataBase.update({
+        comments: firebase.firestore.FieldValue.arrayUnion(this.text),
+      });
+      this.$refs.input[num].textContent = ''
+    }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+.active {
+  color: #6fbe44;
+}
+.warraper {
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
 
+  .home-main-head {
+    margin: 8px 0 15px;
+    background-color: #fff;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    position: relative;
+    border-bottom: 1px solid #e7e7e7;
+
+    .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      margin: auto;
+      cursor: pointer;
+      background-color: #6fbe49;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .create-btn {
+      padding: 10px;
+      flex: 1;
+      margin: 0 10px;
+      background-color: #ecf7e7;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      color: #6fbe44;
+
+      &:hover {
+        background-color: #d5edca;
+      }
+    }
+
+    .fa-image {
+      font-size: 22px;
+      color: #6fbe44;
+      cursor: pointer;
+    }
+
+    .home-main-fad {
+        background-color: #fff;
+        padding: 16px;
+        border-radius: 5px;
+
+        h4 {
+          font-weight: 500;
+          font-size: 15px;
+        }
+    }
+
+    .overlay {
+      bottom: 0;
+      transition: opacity .3s;
+      opacity: .6;
+      background: #000;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 999;
+    }
+
+    .create-post {
+      position: absolute;
+      top: 0;
+      z-index: 9999;
+      left: 0;
+      right: 0;
+      background-color: #fff;
+      border-radius: 8px;
+      padding:16px;
+
+      .create-post-head {
+        display: flex;
+        align-items: center;
+        padding-bottom: 8px;
+        position: relative;
+
+        .create-post-exit {
+          position: absolute;
+          right: 0;
+          width: 30px;
+          height: 30px;
+          cursor: pointer;
+
+          i {
+            font-size: 30px;
+          }
+        }
+
+        .user-image {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          overflow: hidden;
+          margin-right: 10px;
+
+          img {
+            width: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .user-name { 
+          font-weight: 600;
+        }
+
+        .access-permission {
+          border: none;
+          border-radius: 5px;
+          padding: 4px 8px;
+          display: flex;
+          align-items: center;
+          cursor:pointer;
+          margin-top: 5px;
+          position: relative;
+
+          i {
+            font-size: 15px;
+          }
+
+          i:nth-child(3) {
+              height: 20px; 
+          }
+
+          span {
+            margin: 0 8px;
+          }
+
+          .option-list {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            padding: 8px 0;
+            background-color: #fff;
+            border-radius: 3px;
+            width: 164px;
+            display: none;
+            box-shadow: 0 0 4px rgb(247, 245, 245);
+            border: 1px solid #e5e5e5;
+
+            .option-item {
+              padding: 8px 16px;
+              display: flex;
+              align-items: center;
+              justify-content: flex-start;
+
+              .radio-input {
+                width: 22px;
+                height: 22px;
+                margin-right: 10px;
+                border-radius: 50%;
+                border: 1px solid #ccc;
+              }
+
+              &:hover {
+                background-color: #6fbe44;
+              }
+            }
+          }
+
+          &:hover .option-list {
+            display: block;
+          }
+        }
+        
+      }
+    }
+
+    .create-post-main {
+
+      .text-area {
+        width: 100%;
+        padding: 10px 0;
+        outline: none;
+        border: none;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        font-size: 18px;
+      }
+      textarea::-webkit-scrollbar {
+        width: 6px;
+        background-color: #F5F5F5;
+      }
+
+      textarea::-webkit-scrollbar-thumb {
+        background-color: #B3B3B3; 
+        border-radius: 10px;
+      }
+
+      .create-post-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #eee;
+        height: 40px;
+
+        .action-item {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+
+          img {
+            margin: 0 5px;
+          }
+        }
+      }
+
+      .create-post-share {
+        display: block;
+        text-align: center;
+        background-color: #6fbe44;
+        color: #fff;
+        margin-top: 16px;
+        border-radius: 5px ;
+      }
+    }
+  }
+
+  .home-main-content {
+
+    .post-item {
+      background-color: #fff;
+      border-radius: 5px;
+      margin-bottom: 12px;
+
+      .post-item__head {
+        padding: 12px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        
+        .user-image {
+          width: 38px;
+          height: 38px;
+          overflow: hidden;
+          border-radius: 50%;
+          margin-right: 10px;
+          cursor: pointer;
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          img {
+            width: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .user-name {
+          font-weight: 500;
+        }
+
+        .setting {
+          position: absolute;
+          right: 20px;
+        }
+      }
+
+      .post-item__content {
+        padding: 0 12px 12px;
+        white-space: pre-line;
+      }
+
+      .post-item__attachment {
+        width: 100%;
+        overflow: hidden;
+
+        img {
+          height: 100%;
+          width: 100%;
+        }
+      }
+
+      .post-item__stats {
+        padding: 12px 8px;
+        display: flex;
+        justify-content: space-between;
+
+        .react {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+
+          .react-image {
+            width: 20px;
+            height: 20px;
+            overflow: hidden;
+            margin: 0 1px;
+
+            img {
+              width: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .quantity {
+            margin-left: 2px;
+            font-size: 15px;
+            color: #4D4D4D;
+          }
+        }
+
+        .number {
+          display: flex;
+          align-items: center;
+
+          .number-seen {
+            font-size: 15px;
+            margin: 0 5px;
+            color: #4D4D4D;
+          }
+
+          .number-comments {
+            @extend .number-seen;
+            cursor: pointer;
+          }
+        }
+      }
+
+      .post-item__action {
+        padding: 4px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+
+        .item {
+          line-height: 40px;
+          flex-grow: 1;
+          text-align: center;
+          cursor: pointer;
+
+          &:hover{
+            background-color: #f2f2f2;
+          }
+
+          i {
+            margin-right: 5px;
+          }
+
+        }
+      }
+
+      // .post-item__comments {
+
+      // }
+
+      .comment {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+
+        .user-image {
+          width: 32px ;
+          height: 32px;
+          overflow: hidden;
+          border-radius: 50%;
+          margin-right: 10px;
+
+          img {
+            width: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .input-form {
+          display: flex;
+          align-items: center;
+          width: calc(100% - 45px);
+          position: relative;
+
+          .input {
+            // resize: both;
+            word-break: break-word;
+            font-size: 15px;
+            flex: 1;
+            overflow: hidden;
+            border: none;
+            outline: none;
+            padding: 8px 90px 8px 12px;
+            background: #f5f5f5;
+            border: 1px solid #e5e5e5;
+            border-radius: 18px;
+          }
+
+          .input[contenteditable]:empty::before {
+            content: "Viết bình luận...";
+          }
+
+          .action {
+            position: absolute;
+            right: 8px;
+            bottom: 4px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+
+            i {
+              font-size: 20px;
+              margin: 0 5px;
+              cursor: pointer;
+              opacity: 0.7;
+
+              &:hover {
+                opacity: 1;
+              }
+            }
+
+            img {
+              cursor: pointer;
+              opacity: 0.7;
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+          
+        }
+      }
+    }
+  }
+}
 </style>

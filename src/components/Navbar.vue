@@ -2,9 +2,9 @@
   <div class="wrapper">
     <div class="navbar">
       <div class="navbar-left">
-        <a href=""   class="navbar-left__logo" >
+        <div href=""   class="navbar-left__logo" @click="$router.push('/home')">
           <img src="../assets/logo.svg" alt="" srcset="">
-        </a> 
+        </div> 
         <div style="width: 1px; height: 34px; background-color: rgb(238, 238, 238);"></div>
         <div class="navbar-left__search">
           <i class="fal fa-search"></i>
@@ -12,11 +12,11 @@
         </div>
       </div>
       <div class="navbar-main">
-        <div class="navbar-main__item "  @click="$router.push('/')" :class="{active:this.currentRoute=== 'Home'}">
+        <div class="navbar-main__item "  @click="$router.push('/home')" :class="{active:this.currentRoute=== 'Home'}">
           <i class="fal fa-home-alt"></i>
           <span>Trang chủ</span>
         </div>
-        <div class="navbar-main__item" @click="$router.push('/login')" :class="{active:this.currentRoute=== 'Group'}">
+        <div class="navbar-main__item" @click="$router.push('/group')" :class="{active:this.currentRoute=== 'Group'}">
           <i class="fal fa-users"></i>
           <span>Nhóm</span>
         </div>
@@ -36,9 +36,10 @@
         <div class="navbar-right__noti" @click="toggleNotificationDialog">
           <i class="fas fa-bell"></i>
         </div>
-        <div class="navbar-right__user" @click="toggleProfileMenu">
+        <button class=" login-btn" @click="$router.push('/login')" v-show="this.$store.state.user == null">Đăng nhập</button>
+        <div class="navbar-right__user" @click="toggleProfileMenu" v-show="this.$store.state.user != null">
           <div class="user__image">
-            <img src="../assets/default-user-avatar.png" alt="" srcset="">
+            <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
           </div>
           <div class="user__name">
             <span>{{this.$store.state.userName}}</span>
@@ -47,7 +48,7 @@
           <div class="user__setting" v-show="profileMenu">
               <div class="user__info" @click="$router.push('/' + $store.state.userUID )">
                 <div class="user__info-image">
-                  <img src="../assets/default-user-avatar.png" alt="" srcset="">
+                  <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
                 </div>
                 <h3>{{this.$store.state.userName}}</h3>
                 <p>Trang cá nhân</p>
@@ -176,6 +177,7 @@ export default {
         width: 98px;
         padding: 18px 0 10px;
         margin-right: 16px;
+        cursor: pointer;
 
         img {
           width: 100%;
@@ -444,6 +446,16 @@ export default {
       border-radius: 4px;
       box-shadow: 0 0 3px darkkhaki;
       z-index: 999;
+    }
+
+    .login-btn {
+      cursor: pointer;
+      font-size: 15px;
+      padding: 12px;
+      background-color: #6fbe49;
+      color: #fff;
+      border-radius: 8px;
+      border: none;
     }
   }
 }
