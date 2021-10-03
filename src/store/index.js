@@ -10,7 +10,9 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: { 
+    isLoading : true,
     user: null,
+    postsOfUserUID: [],
 
     userUID : '',
     userName: '',
@@ -76,32 +78,26 @@ export default new Vuex.Store({
       // commit("setProfileInitials")
     },
     async getPost({ state }) {
-      db.collection("posts")
+      await db.collection("posts")
       .onSnapshot(
         (querySnapshot) => {
           state.posts = []
           querySnapshot.forEach((doc) => {
               state.posts.push(doc.data());
+              if(state.posts.length > 5) state.isLoading = false
           });
       })
-      // const dataBase = await db.collection('posts').orderBy('date', 'desc');
-      // const dbResults = await dataBase.get();
-      // await dbResults.forEach((doc) => {
-      //   // if (!state.posts.some(post => post.blogID === doc.id)) {
-      //     const data = {
-      //       postID: doc.data().postID,
-      //       text : doc.data().text,
-      //       avatar : doc.data().avatar,
-      //       photoURL: doc.data().photoURL,
-      //       date: doc.data().date,
-      //       userUID : doc.data().userUID,
-      //       userName: doc.data().userName,
-      //     };
-      //     state.posts.push(data);
-      //   // }
-      //   console.log(state.posts)
-      //   // state.postLoaded = true;
-      // });
+    },
+    async getPostByUserUID({ state },payload) {
+      await db.collection("posts").where("userUID","==",payload)
+      .onSnapshot(
+        (querySnapshot) => {
+          state.postsOfUserUID = []
+          querySnapshot.forEach((doc) => {
+              state.postsOfUserUID.push(doc.data());
+              if(state.postsOfUserUID.length > 5) state.isLoading = false
+          });
+      })
     },
 
   },

@@ -147,7 +147,7 @@ export default {
       await dataBase.update({
         coverImageURL : this.coverImageURL
       }); 
-    }
+    },
   }
 }
 </script>

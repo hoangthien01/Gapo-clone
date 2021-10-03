@@ -41,7 +41,9 @@ export default {
 <style lang="scss" scoped>
 .home-sidebar{
   width: 23%;
-  position: relative;
+  position: fixed;
+  left: 0;
+  min-height: calc(100% - 72px);
 
   h2 {
     font-size: 21px;

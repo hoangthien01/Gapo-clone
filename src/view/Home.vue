@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <loading v-show="isLoading"></loading>
     <Sidebar></Sidebar>
     <div class="home-main">
       <News :posts="this.posts"></News>
@@ -22,21 +23,25 @@
 </template>
 
 <script>
+import Loading from '../components/Loading.vue'
 import Sidebar from '../components/Home/Sidebar.vue'
 import News from '../components/News.vue'
 export default {
   name: 'Home',
   data () {
     return {
-
+      // isLoading : true
     }
   },
   components : {
-    Sidebar,News
+    Sidebar,News,Loading
   },
   computed: {
     posts () {
-      return this.$store.state.posts
+      return  this.$store.state.posts
+    },
+    isLoading() {
+      return this.$store.state.isLoading
     }
   },
 }
@@ -51,11 +56,15 @@ export default {
   .home-main {
     width: 54%;
     background-color: #F2F2F2;
+    margin: 0 auto;
     }
   }
 
   .home-account {
     width: 23%;
+    position: fixed;
+    right: 0;
+    min-height: calc(100% - 72px);
 
     .home-account-head {
       padding: 20px 12px;

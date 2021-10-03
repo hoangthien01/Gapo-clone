@@ -1,6 +1,6 @@
 <template>
   <div class="warraper">
-    <div class="home-main-head">
+    <div class="home-main-head" v-show="this.$store.state.userUID == this.$route.params.userId">
       <div class="avatar">
         <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
       </div>
@@ -118,7 +118,7 @@
             <i class="fal fa-thumbs-up"></i>
             <span>Thích</span>
           </div>
-          <div class="item">
+          <div class="item" @click="$refs.input[index].focus()">
             <i class="fal fa-comment-alt"></i>
             <span >Bình luận</span>
           </div>
@@ -128,7 +128,15 @@
           </div>
         </div>
         <div class="post-item__comments">
-
+          <div class="comment-item" v-for="(comment,index) in post.comments" :key="index">
+            <div class="user-image">
+              <img :src="comment.userPhotoURL" alt="" srcset="">
+            </div>
+            <div class="info">
+              <p class="name">{{comment.userName}}</p>
+              <p class="text">{{comment.text}}</p>
+            </div>
+          </div>
         </div>
         <div class="comment">
           <div class="user-image">
@@ -215,11 +223,14 @@ export default {
         }
     },
     async sendComment (post,num) {
-      
-      this.text = this.$refs.input[num].textContent
+      const comment = {
+        text :  this.$refs.input[num].textContent,
+        userPhotoURL : this.$store.state.userPhotoURL,
+        userName : this.$store.state.userName
+      }
       const dataBase = await db.collection("posts").doc(post.postID);
       await dataBase.update({
-        comments: firebase.firestore.FieldValue.arrayUnion(this.text),
+        comments: firebase.firestore.FieldValue.arrayUnion(comment),
       });
       this.$refs.input[num].textContent = ''
     }
@@ -592,9 +603,50 @@ export default {
         }
       }
 
-      // .post-item__comments {
+      .post-item__comments {
+        padding-top: 8px;
 
-      // }
+        .comment-item {
+          padding: 8px 60px 12px 12px;
+          display: flex;
+          justify-content: flex-start;
+          flex-wrap: nowrap;
+
+          .user-image {
+            width: 32px !important;
+            height: 32px;
+            overflow: hidden;
+            border-radius: 50%;
+            margin-right: 10px;
+
+            img {
+              width: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .info {
+            padding: 8px 10px;
+            max-width: 380px;
+            display: inline-block;
+            background-color: #f5f5f5;
+            border-radius: 12px;
+
+            .name {
+              font-size: 15px;
+              font-weight: 500;
+            }
+  
+            .text {
+              // white-space: pre-line;
+              font-size: 15px;
+              word-break: break-word;
+              color: #1A1A1A;
+            }
+          }
+
+        }
+      }
 
       .comment {
         display: flex;
@@ -642,7 +694,6 @@ export default {
             position: absolute;
             right: 8px;
             bottom: 4px;
-            z-index: 999;
             display: flex;
             align-items: center;
 

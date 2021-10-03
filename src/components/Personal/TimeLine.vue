@@ -46,7 +46,7 @@
       </div>
     </div>
     <div class="profile-right">
-      <news></news>
+      <news :posts="postsOfUserUID"></news>
     </div>
   </div>
 </template>
@@ -57,6 +57,15 @@ export default {
   name: 'TimeLine',
   components: {
     News
+  },
+   computed: {
+    postsOfUserUID () {
+      return this.$store.state.postsOfUserUID
+    }
+  },
+  created () {
+    const userUID = this.$route.params.userId
+    this.$store.dispatch("getPostByUserUID",userUID)
   }
 }
 </script>
