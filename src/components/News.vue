@@ -1,6 +1,6 @@
 <template>
   <div class="warraper">
-    <div class="home-main-head" v-show="this.$store.state.userUID == this.$route.params.userId">
+    <div class="home-main-head" v-show="this.$store.state.userUID == this.user.userUID">
       <div class="avatar">
         <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
       </div>
@@ -68,7 +68,14 @@
               <span >Hỏi đáp</span>
             </div>
           </div>
-          <button class="btn create-post-share" @click="postStatus" >Chia sẻ</button>
+          <button class="btn create-post-share" @click="postStatus" >
+            <span v-show="!isPosting"> Chia sẻ</span>
+            <div class="ani-create-post" v-show="isPosting">
+              <div class="one"></div>
+              <div class="two"></div>
+              <div class="three"></div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
@@ -140,7 +147,7 @@
         </div>
         <div class="comment">
           <div class="user-image">
-            <img :src="post.avatar" alt="" srcset="">
+            <img :src="$store.state.userPhotoURL" alt="" srcset="">
           </div>
           <div class="input-form">
             <p class="input" role="textbox" contenteditable 
@@ -172,17 +179,15 @@ export default {
       activeCreatePost : false,
       text : '',
       photoURL : '',
+      isPosting : false
     }
   },
   props : [
-    'posts'
+    'posts','user'
   ],
   methods: {
-    // onInput(event) {
-    //   const value = event.target.innerText;
-    //   this.text = value;
-    // },
     async postStatus() {
+      this.isPosting = true
       const timestamp = await Date.now();
       const dataBase = await db.collection("posts").doc();
       await dataBase.set({
@@ -199,6 +204,9 @@ export default {
         numberComments: 0,
       });
       this.activeCreatePost = false
+      this.isPosting = false
+      this.text = ''
+      this.photoURL = ''
     },
     photoURLSelected (e) {
       const image = e.target.files[0];
@@ -230,6 +238,7 @@ export default {
       }
       const dataBase = await db.collection("posts").doc(post.postID);
       await dataBase.update({
+        numberComments : post.numberComments + 1,
         comments: firebase.firestore.FieldValue.arrayUnion(comment),
       });
       this.$refs.input[num].textContent = ''
@@ -472,6 +481,7 @@ export default {
         color: #fff;
         margin-top: 16px;
         border-radius: 5px ;
+        height: 40px;
       }
     }
   }
@@ -720,6 +730,53 @@ export default {
         }
       }
     }
+  }
+}
+
+.ani-create-post {
+  left: 50%;
+  display: flex;
+  transform: translate(-50%, -50%);
+  position: absolute;
+} 
+
+.ani-create-post div {
+  margin: 5px;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  border-radius: 50%;
+  animation-duration: 0.8s;
+  animation-iteration-count: infinite;
+}
+
+.one {
+  animation-name: load-one;
+}
+
+@keyframes load-one {
+  30% {
+     transform: translateY(-50%);
+  }
+}
+
+.two {
+  animation-name: load-two;
+}
+
+@keyframes load-two {
+  50% {
+     transform: translateY(-50%);
+  }
+}
+
+.three {
+  animation-name: load-three;
+}
+
+@keyframes load-three {
+  70% {
+     transform: translateY(-50%);
   }
 }
 </style>

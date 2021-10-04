@@ -8,6 +8,7 @@
         <p class="wrongMsg">{{ this.wrongMsg }}</p>
         <button class="btn continue-btn" id="log-in" @click="signInWithPhoneNumber" :style="[ this.phoneNumber !== '' ? {backgroundColor:'#6FBE49'} : '']">Tiếp tục</button>
         <button class="btn facebook-btn" @click="signInWithFacebook">Đăng nhập với Facebook</button>
+        <div id="recaptcha-container"></div>
       </div>
 
       <!-- password form -->
@@ -81,15 +82,13 @@ export default {
       this.isPassWordForm = false
     },
     async signInWithPhoneNumber() {
-      firebase.auth().useDeviceLanguage()         
+      firebase.auth().useDeviceLanguage()   
       window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('log-in',{
         'size':'invisible',
         'callback':(response) => {
           console.log(response)
         }
-      })   
-
-      console.log(this.phoneNumber)
+      })          
       await db.collection("users").where("phoneNumber","==",this.phoneNumber).get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
@@ -101,17 +100,21 @@ export default {
       .catch((error) => {
           console.log("Error getting documents: ", error);
       });
-      if (this.$store.state.user != null) {
-        var testVerificationCode = "123456";
-        firebase.auth().settings.appVerificationDisabledForTesting = true;
-        await firebase.auth().signInWithPhoneNumber(this.phoneNumber, window.recaptchaVerifier)
-          .then(function (confirmationResult) {
-            return confirmationResult.confirm(testVerificationCode)
-          }).catch(function () {
-          });
-          console.log(firebase.auth().currentUser.uid)
+      console.log(this.$store.state.userUID)
+      
+      if (this.$store.state.userUID != '') {
+        // firebase.auth().settings.appVerificationDisabledForTesting = true;
+        // var testVerificationCode = "123456";
+        // window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container') 
+        // await firebase.auth().signInWithPhoneNumber(this.phoneNumber, window.recaptchaVerifier)
+        //   .then(function (confirmationResult) {
+        //      return confirmationResult.confirm(testVerificationCode)
+        //   }).catch((error)=>{
+        //   this.wrongMsg = error.message
+        // })
+        //   console.log(firebase.auth().currentUser.uid)
         this.isPassWordForm = true
-      } else {           
+      } else {          
         firebase.auth().signInWithPhoneNumber(this.phoneNumber,window.recaptchaVerifier)
         .then((confirmationResult)=>{        
             window.confirmationResult = confirmationResult

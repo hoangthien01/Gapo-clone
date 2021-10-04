@@ -46,7 +46,7 @@
       </div>
     </div>
     <div class="profile-right">
-      <news :posts="postsOfUserUID"></news>
+      <news :posts="postsOfUserUID" :user="this.user"></news>
     </div>
   </div>
 </template>
@@ -63,6 +63,9 @@ export default {
       return this.$store.state.postsOfUserUID
     }
   },
+  props : [
+    'user'
+  ],
   created () {
     const userUID = this.$route.params.userId
     this.$store.dispatch("getPostByUserUID",userUID)

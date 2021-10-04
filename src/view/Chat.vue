@@ -19,19 +19,17 @@
           <input type="text" placeholder="Tìm kiếm" class="input">
         </div>
         <div class="friend-messages">
-          <div class="friend-messages-item">
+          <div class="friend-messages-item" v-for="(message,index) in messages" :key="index"
+           @click="getMessage(message.messageId)">
             <div class="friend-image">
-              <img src="../assets/system.jpeg" alt="" srcset="">
+              <img :src="message.user1.userPhotoURL" alt="" srcset="">
             </div>
             <div class="friend-info">
               <p class="friend-name-box">
-                <span class="name"> GapoSystem </span>
-                <span class="time">7 ngày</span>
+                <span class="name"> {{message.user1.userName}} </span>
+                <span class="time">vừa xong</span>
               </p>
-              <p class="message">Bạn đã đăng nhập lúc: 22:42, 23 tháng 09, 2021
-                Đia chỉ IP: 2402:800:620e:9f6b:4c17:36fb:11b5:8c16
-                Device ID: 82a6a7b6-6daa-4884-8840-16c5e13890f2
-                Tại: trình duyệt Chrome phiên bản 94.0.4606 hệ điều hành Windows</p>
+              <p class="message">Tin nhăn mới</p>
             </div>
           </div>
         </div>
@@ -39,14 +37,26 @@
     </div>
     <div class="chat-main">
       <div class="head">
-        <img src="../assets/system.jpeg" class="system-image">
+        <div class="user-image">
+          <img :src="this.chatWithUser.userPhotoURL" class="system-image">
+        </div>
         <div class="system-name">
-            <p>GapoSystem
+            <p>{{this.chatWithUser.userName}}
             <img src="../assets/icon-verify-blue.svg" alt="" srcset=""> </p>
             <span>Offline</span>
         </div>
       </div>
       <div class="content">
+        <div class="messages" ref="scrollable">
+          <div class="message-item" v-for="(msg,index) in message.messages" :key="index"
+            :class="{'my-message' : msg.userUID == $store.state.userUID}"
+          >
+            <div class="user-image">
+              <img :src="msg.userPhotoURL" alt="" srcset="">
+            </div>
+            <span class="text">{{msg.text}}</span>
+          </div>
+        </div>
         <div class="action">
           <div class="image-upload">
             <img src="../assets/Chat/image.svg" alt="" srcset="">
@@ -59,10 +69,14 @@
 
           </div>
           <div class="message-input">
-            <input type="text" placeholder="Trả lời...">
+            <input type="text" placeholder="Trả lời..." v-model="text">
             <img src="../assets/Chat/emoji.svg" alt="" srcset="">
           </div>
-          <div class="btn-send">
+          <div class="btn-send" 
+            @keyup.enter ="sendMessage"
+            @keydown.enter.prevent 
+            @click="sendMessage"
+          >
             <img src="../assets/Chat/send-message-icon.svg" alt="" srcset="">
           </div>
 
@@ -72,9 +86,11 @@
     <div class="chat-right">
       <div class="chat-system">
         <div class="system-content">
-          <img src="../assets/system.jpeg" class="system-image">
+          <div class="user-image">
+            <img :src="this.chatWithUser.userPhotoURL" class="system-image">
+          </div>
           <div class="system-name">
-            <p>GapoSystem</p>
+            <p>{{this.chatWithUser.userName}}</p>
             <img src="../assets/icon-verify-blue.svg" alt="" srcset="">
           </div>
           <span class="view-profile">Xem profile</span>
@@ -132,13 +148,57 @@
 </template>
 
 <script>
+import firebase from 'firebase/app'
+import db from '../firebase/index'
 export default {
   name: 'Chat',
   data () {
     return {
       settingSystemActive : false,
       libSystemActive : false,
-
+      text : '',
+      messages : [],
+      message : {},
+      chatWithUser : {}
+    }
+  },
+  async created () {
+    await db.collection("messages")
+      .onSnapshot(
+        (querySnapshot) => {
+          this.messages = []
+          querySnapshot.forEach((doc) => {
+              this.messages.push(doc.data());
+          });
+      })
+      setTimeout(() => {
+        this.getMessage(this.messages[0].messageId)
+      },1000)
+  },
+  updated() {
+      this.$refs['scrollable'].lastElementChild.scrollIntoView(false)
+  },
+  methods : {
+    async getMessage (messageId) {
+      await db.collection("messages").doc(messageId)
+      .onSnapshot(
+        (querySnapshot) => {
+          this.message = {}
+          this.message= querySnapshot.data();
+      })
+      this.chatWithUser = (await db.collection("messages").doc(messageId).get()).data().user1
+      console.log(this.chatWithUser)
+    },
+    async sendMessage() {
+      await db.collection("messages").doc(this.message.messageId)
+        .update ({
+          messages : firebase.firestore.FieldValue.arrayUnion({
+            userUID : this.$store.state.userUID,
+            userPhotoURL : this.$store.state.userPhotoURL,
+            text : this.text
+          })
+        })
+      this.text = ''
     }
   }
 }
@@ -149,8 +209,16 @@ export default {
     transform: rotateZ(180deg);
 }
 
+.my-message {
+  justify-content: flex-end;
+
+  .user-image {
+    display: none;
+  }
+}
+
 .chat-wrapper {
-  min-height: 100%;
+  height: 100%;
   padding-top: 72px;
   display: flex;
 
@@ -280,15 +348,24 @@ export default {
 
   .chat-main {
     width: 54%;
+    position: relative;
 
     .head {
       display: flex;
       align-items: center;
       padding: 3px 12px;
 
-      img {
+      .user-image {
         width: 40px;
         height: 40px;
+        overflow: hidden;
+        border-radius: 50%;
+        margin-right: 5px;
+
+        img {
+          width: 100%;
+          object-fit: cover;
+        }
       }
 
       .system-name {
@@ -313,8 +390,44 @@ export default {
     }
 
     .content {
-      position: relative;
       height: calc(100% - 52px);
+
+      .messages {
+        padding: 12px;
+        height: calc(100% - 62px);
+        overflow-y: scroll;
+
+        &::-webkit-scrollbar {
+          width: 0px;
+        }
+
+        .message-item {
+          display: flex;
+          align-items: center;
+          padding:  8px 0;
+
+          .user-image {
+            width: 28px;
+            height: 28px;
+            overflow: hidden;
+            border-radius: 50%;
+            margin-right :10px;
+
+            img  {
+              width: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .text {
+            background-color: #eff0ef;
+            border-radius: 15px;
+            padding: 8px 12px;
+            word-break: break-word;
+            max-width: 500px;
+          }
+        }
+      }
 
       .action {
         position: absolute;
@@ -388,9 +501,19 @@ export default {
         left: 50%;
         text-align: center;
 
-        .system-image {
+        .user-image {
           width: 80px;
+          height: 80px;
+          overflow: hidden;
+          border-radius: 50%;
+          margin: auto;
+
+          .system-image {
+            width: 100%;
+            object-fit: cover;
+          }
         }
+
 
         .system-name {
           display: flex;

@@ -107,6 +107,8 @@ export default {
           passWord : this.passWord,
           dateOfBirth: this.dateOfBirth,
           gender: this.gender,
+          userPhotoURL: require('../../assets/default-user-avatar.png'),
+          coverImageURL: require('@/assets/default-cover.jpg')
         });  
         this.$router.push('/home')
       }

@@ -9,7 +9,7 @@
       </div>
       <div class="intro-item">
         <label for="" class="name">Tên tài khoản</label>
-        <span class="text">{{this.$store.state.userName}}</span>
+        <span class="text">{{this.user.userName}}</span>
         <div class="action">
           <i class="fal fa-pen"></i>
           <span>Chỉnh sửa</span>
@@ -25,7 +25,7 @@
       </div>
        <div class="intro-item">
         <label for="" class="name">Ngày sinh</label>
-        <span class="text">{{this.$store.state.dateOfBirth}}</span>
+        <span class="text">{{this.user.dateOfBirth}}</span>
         <div class="action">
           <i class="fal fa-pen"></i>
           <span>Chỉnh sửa</span>
@@ -112,7 +112,10 @@
 
 <script>
 export default {
-  name: 'Intro'
+  name: 'Intro',
+   props : [
+    'user'
+  ],
 }
 </script>
 

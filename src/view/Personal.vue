@@ -1,5 +1,6 @@
 <template>
   <div class="wrapper">
+    <user-photo-preview></user-photo-preview>
     <div class="personal-page">
       <div class="profile-head">
         <div class="cover-image">
@@ -14,7 +15,7 @@
             <img :src="user.userPhotoURL" alt="" srcset="">
           </div>
           <div class="avatar-mask">
-              <div class="view-avatar">
+              <div class="view-avatar" @click="$store.commit('setUserPhotoPreview')">
                 <img src="../assets/eye-icon.svg" alt="" srcset="">
                 <p>Xem ảnh</p>
               </div>
@@ -35,8 +36,8 @@
             Bạch Dương
           </div>
           <p class="profile-user-description">Mô tả ngắn về bản thân của bạn. <span>Thêm mô tả</span></p>
-
         </div>
+
         <div class="profile-head-nav">
           <ul class="list-nav" >
             <li class="profile-head-item" @click="changeActiveNav(' ')" :class="{ 'nav-item-active' : activeNav === ' '}">Dòng thời gian</li>
@@ -44,28 +45,44 @@
             <li class="profile-head-item" @click="changeActiveNav('friends')" :class="{ 'nav-item-active' : activeNav === 'friends'}">Bạn bè</li>
             <li class="profile-head-item" @click="changeActiveNav('images')" :class="{ 'nav-item-active' : activeNav === 'images'}">Ảnh</li>
           </ul>
-          <button class="btn-settings" @click="() => {this.activeSettings = !this.activeSettings}">
-            <i class="fas fa-cog" ></i>
-            <ul class="list-settings" v-show="activeSettings">
-              <li class="setting-item">
-                <i class="fas fa-cog" ></i>
-                Cài đặt
-              </li>
-              <li class="setting-item">
-                <i class="fas fa-edit"></i>
-                Chỉnh sửa thông tin
-              </li>
-              <li class="setting-item">
-                <i class="fad fa-lock-alt"></i>
-                Thay đổi mật khẩu
-              </li>
-            </ul>
-          </button>
+          <div class="list-action">
+            <div v-show="user.userUID != this.$store.state.userUID">
+              <button class="btn btn-follow">
+                <i class="fas fa-wifi"></i>
+                <span>Theo dõi</span>
+              </button>
+              <button class="btn btn-follow" @click="newMessage(user)">
+                <i class="fas fa-comment"></i>
+                <span>Nhắn tin</span>
+              </button>
+              <button class="btn btn-follow">
+                <i class="fas fa-user-plus"></i>
+                <span>Kết bạn</span>
+              </button>
+            </div>
+            <button class="btn-settings" @click="() => {this.activeSettings = !this.activeSettings}">
+              <i class="fas fa-cog" ></i>
+              <ul class="list-settings" v-show="activeSettings">
+                <li class="setting-item">
+                  <i class="fas fa-cog" ></i>
+                  Cài đặt
+                </li>
+                <li class="setting-item">
+                  <i class="fas fa-edit"></i>
+                  Chỉnh sửa thông tin
+                </li>
+                <li class="setting-item">
+                  <i class="fad fa-lock-alt"></i>
+                  Thay đổi mật khẩu
+                </li>
+              </ul>
+            </button>
+          </div>
         </div>
       </div>
 
-      <time-line v-show="activeNav == ' '"></time-line>
-      <intro v-show="activeNav == 'about'"></intro>
+      <time-line :user="this.user" v-show="activeNav == ' '"></time-line>
+      <intro :user="this.user" v-show="activeNav == 'about'"></intro>
       <friends v-show="activeNav == 'friends'"></friends>
       <images v-show="activeNav == 'images'"></images>
     </div>
@@ -80,10 +97,11 @@ import TimeLine from '../components/Personal/TimeLine.vue'
 import Intro from '../components/Personal/Intro.vue'
 import Friends from '../components/Personal/Friends.vue'
 import Images from '../components/Personal/Images.vue'
+import userPhotoPreview from '../components/Personal/userPhotoPreview.vue'
 export default {
   name: 'Personal',
   components : {
-    TimeLine,Intro,Friends,Images
+    TimeLine,Intro,Friends,Images,userPhotoPreview
   },
   computed : {
     coverImageURL: {
@@ -99,15 +117,23 @@ export default {
     return {
       activeNav : ' ',
       previewImage : '',
+      userPhoto : '',
       activeSettings: false,
-      user : null
+      user : {}
     }
   },
   async created () {
     const userUID = this.$route.params.userId
-    const dataBase = await db.collection('users').doc(userUID)
-    const dbResults = await dataBase.get()
-    this.user = dbResults.data()
+    console.log(userUID)
+    await db.collection("users").where("userUID","==",userUID)
+      .onSnapshot(
+        (querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            this.user = doc.data()
+            console.log(doc.data())
+          });
+      })
+    console.log(this.user)  
     if(this.user ==  null) this.$router.push('404/notfound-user')
   },
   methods: {
@@ -128,7 +154,11 @@ export default {
       const reader = new FileReader();
       reader.readAsDataURL(image);
       reader.onload = e =>{
-        this.previewImage = e.target.result;
+        this.userPhoto = e.target.result;
+        const dataBase = db.collection("users").doc(this.user.userUID);
+        dataBase.update({
+          userPhotoURL : this.userPhoto
+        }); 
       }
     },
     coverImage () {
@@ -141,13 +171,29 @@ export default {
       this.previewImage = ''
     },
     async saveCoverImage () {
-      // this.coverImageURL = this.previewImage
+      this.coverImageURL = this.previewImage
       this.previewImage = ''
       const dataBase = db.collection("users").doc(this.user.userUID);
       await dataBase.update({
         coverImageURL : this.coverImageURL
       }); 
     },
+    async newMessage (user) {
+      const database = db.collection("messages").doc()
+      await database.set({
+        messageId : database.id,
+        user1 : user ,
+        user2 : this.$store.state.user,
+        messages: [
+          {
+            userPhotoURL : this.$store.state.userPhotoURL,
+            text : 'hellow',
+            userUID : this.$store.state.userUID
+          }
+        ],
+      })
+      this.$router.push('/chat')
+    }
   }
 }
 </script>
@@ -328,44 +374,57 @@ export default {
             border-bottom: .1875rem solid #6fbe44;
           }
         }
-        
-        .btn-settings {
-          height: 30px;
-          width: 35px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          position: relative;
-          
-          .list-settings {
-            position: absolute;
-            top: 125%;
-            right: -10px;
-            z-index: 999;
-            list-style: none;
-            width: 220px;
-            background-color: #fff;
-            text-align: left;
-            border-radius: 5px;
-            border: 1px solid #e5e5e5;
-            box-shadow: 0 0 8px rgba(0,0,0,0.3);
-            font-size: 14px;
 
-            .setting-item {
-              padding: 15px 30px;
+        .list-action {
+          display: flex;
+          align-items: center;
 
-              i {
-                margin-right: 5px;
-              }
+          .btn {
+            width: auto;
+            margin:  5px;
 
-              &:hover {
-                background-color: #6fbe44;
-                color: #fff;
+            i {
+              margin-right: 3px;
+            }
+          }
+
+          .btn-settings {
+            height: 30px;
+            width: 35px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            
+            .list-settings {
+              position: absolute;
+              top: 125%;
+              right: -10px;
+              z-index: 999;
+              list-style: none;
+              width: 220px;
+              background-color: #fff;
+              text-align: left;
+              border-radius: 5px;
+              border: 1px solid #e5e5e5;
+              box-shadow: 0 0 8px rgba(0,0,0,0.3);
+              font-size: 14px;
+  
+              .setting-item {
+                padding: 15px 30px;
+  
+                i {
+                  margin-right: 5px;
+                }
+  
+                &:hover {
+                  background-color: #6fbe44;
+                  color: #fff;
+                }
               }
             }
           }
         }
-
       }
     }
   }

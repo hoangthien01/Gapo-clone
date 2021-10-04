@@ -3,7 +3,7 @@
     <loading v-show="isLoading"></loading>
     <Sidebar></Sidebar>
     <div class="home-main">
-      <News :posts="this.posts"></News>
+      <News :posts="this.posts" :user="this.$store.state.user"></News>
     </div>
     <div class="home-account">
       <div class="home-account-head">

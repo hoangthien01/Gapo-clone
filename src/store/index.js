@@ -11,8 +11,9 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: { 
     isLoading : true,
-    user: null,
+    user: {},
     postsOfUserUID: [],
+    userPhotoPreview : null,
 
     userUID : '',
     userName: '',
@@ -58,6 +59,7 @@ export default new Vuex.Store({
       state.user = payload
     },
     setProfileInfo(state, doc) {
+      state.user = doc.data()
       state.userUID = doc.id
       state.userName = doc.data().userName
       state.passWord = doc.data().passWord
@@ -67,15 +69,22 @@ export default new Vuex.Store({
       state.userPhotoURL = doc.data().userPhotoURL
       state.coverImageURL = doc.data().coverImageURL
     },
+    setUserPhotoPreview(state) {
+      state.userPhotoPreview = !state.userPhotoPreview
+    }
   
    
   },
   actions: {
     async getCurrentUser({commit}) {
-      const dataBase = await db.collection('users').doc(firebase.auth().currentUser.uid)
-      const dbResults = await dataBase.get()
-      commit("setProfileInfo", dbResults)
-      // commit("setProfileInitials")
+      await db.collection('users').doc(firebase.auth().currentUser.uid)
+      .onSnapshot(
+        (querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            commit("setProfileInfo", doc)
+          });
+      })
+      // const dbResults = await dataBase.get()
     },
     async getPost({ state }) {
       await db.collection("posts")
@@ -85,7 +94,11 @@ export default new Vuex.Store({
           querySnapshot.forEach((doc) => {
               state.posts.push(doc.data());
               if(state.posts.length > 5) state.isLoading = false
-          });
+            });
+            state.posts.sort((a,b) => { 
+              return parseInt(b.date) - parseInt(a.date)
+            })
+
       })
     },
     async getPostByUserUID({ state },payload) {
