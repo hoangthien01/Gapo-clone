@@ -6,7 +6,7 @@
       </div>
       <button class="create-btn" @click="() => this.activeCreatePost = true">Đăng bài viết</button>
       <i class="fas fa-image"></i>
-      <div class="overlay" @click="() => {this.activeCreatePost = false}" v-show="activeCreatePost"></div>
+      <div class="overlay" @click="clickOutSide" v-show="activeCreatePost"></div>
       <div class="create-post" v-show="activeCreatePost">
         <div class="create-post-head">
           <div class="user-image">
@@ -86,15 +86,38 @@
       <div class="post-item" v-for="(post,index) in  posts" :key="index">
         <div class="post-item__head">
           <div class="user-image">
-            <img :src="post.avatar" alt="" srcset="">
+            <img :src="post.userPhotoURL" alt="" srcset="">
           </div>
           <div>
             <p class="user-name" >{{post.userName}}</p>
             <p class="time">{{new Date(post.date).toLocaleString("en-us", { dateStyle: "long" })}}</p>
           </div>
-          <div class="setting">
+          <div class="setting" @click="() => {turnOnSetting = post.postID}">
             <i class="far fa-ellipsis-h"></i>
           </div>
+          <div class="overlay" style="background-color : transparent" @click="clickOutSide" v-show="turnOnSetting !=''"></div>
+          <ul class="list-settings"  v-show="post.postID == turnOnSetting">
+            <li class="setting-item">
+              <i class="fas fa-paperclip"></i>
+              <span>Sao chép link bài viết</span>
+            </li>
+            <li class="setting-item">
+              <i class="far fa-copy"></i>
+              <span>Sao chép nội dung bài viết</span>
+            </li>
+            <li class="setting-item">
+              <i class="far fa-bell-slash"></i>
+              <span>Tắt thông báo về bài viết này</span>
+            </li>
+            <li class="setting-item">
+              <i class="far fa-edit"></i>
+              <span> Chỉnh sửa bài viết</span>
+            </li>
+            <li class="setting-item">
+              <i class="far fa-trash-alt"></i>
+              <span>Xóa bài viết</span>
+            </li>
+          </ul>
         </div>
         <div class="post-item__content">
           <p>{{post.text}}</p>
@@ -179,20 +202,25 @@ export default {
       activeCreatePost : false,
       text : '',
       photoURL : '',
-      isPosting : false
+      isPosting : false,
+      turnOnSetting : ''
     }
   },
   props : [
     'posts','user'
   ],
   methods: {
+    clickOutSide() {
+      this.activeCreatePost = false
+      this.turnOnSetting = ''
+    },
     async postStatus() {
       this.isPosting = true
       const timestamp = await Date.now();
       const dataBase = await db.collection("posts").doc();
       await dataBase.set({
         postID :  dataBase.id,
-        avatar : this.$store.state.userPhotoURL,
+        userPhotoURL : this.$store.state.userPhotoURL,
         userUID : this.$store.state.userUID,
         userName : this.$store.state.userName,
         date : timestamp,
@@ -251,6 +279,19 @@ export default {
 .active {
   color: #6fbe44;
 }
+
+.overlay {
+  bottom: 0;
+  transition: opacity .3s;
+  opacity: .6;
+  background-color: #000;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 999;
+}
+
 .warraper {
   width: 100%;
   max-width: 500px;
@@ -313,18 +354,6 @@ export default {
           font-weight: 500;
           font-size: 15px;
         }
-    }
-
-    .overlay {
-      bottom: 0;
-      transition: opacity .3s;
-      opacity: .6;
-      background: #000;
-      left: 0;
-      position: fixed;
-      right: 0;
-      top: 0;
-      z-index: 999;
     }
 
     .create-post {
@@ -524,6 +553,40 @@ export default {
         .setting {
           position: absolute;
           right: 20px;
+          cursor: pointer;
+        }
+
+        .list-settings {
+          position: absolute;
+          top: 55px;
+          right: 15px;
+          padding: 8px 0;
+          background-color: #fff;
+          border-radius: 8px;
+          list-style: none;
+          box-shadow: 0 0 8px rgba(0,0,0,0.5);
+          z-index: 999;
+
+          .setting-item {
+            padding: 5px 16px;
+            cursor: pointer;
+
+            &:hover {
+              color: #fff;
+              text-decoration: none;
+              background-color: #6fbe44;
+            }
+
+            span {
+              font-size: 14px;
+            }
+
+            i {
+              margin-right: 5px;
+              width: 25px;
+              height: 25px;
+            }
+          }
         }
       }
 

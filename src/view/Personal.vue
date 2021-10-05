@@ -124,7 +124,6 @@ export default {
   },
   async created () {
     const userUID = this.$route.params.userId
-    console.log(userUID)
     await db.collection("users").where("userUID","==",userUID)
       .onSnapshot(
         (querySnapshot) => {
@@ -133,7 +132,6 @@ export default {
             console.log(doc.data())
           });
       })
-    console.log(this.user)  
     if(this.user ==  null) this.$router.push('404/notfound-user')
   },
   methods: {
@@ -155,10 +153,22 @@ export default {
       reader.readAsDataURL(image);
       reader.onload = e =>{
         this.userPhoto = e.target.result;
-        const dataBase = db.collection("users").doc(this.user.userUID);
-        dataBase.update({
+        db.collection("users").doc(this.user.userUID).update({
           userPhotoURL : this.userPhoto
         }); 
+        db.collection("posts").where('userUID', '==', this.user.userUID)
+        .get()
+        .then(snapshots => {
+          if (snapshots.size > 0) {
+            console.log(snapshots)
+            snapshots.forEach(orderItem => {
+              console.log(orderItem.id)
+              db.collection("posts").doc(orderItem.id).update ({ 
+                userPhotoURL : this.userPhoto 
+              })
+            })
+          }
+        })
       }
     },
     coverImage () {

@@ -80,9 +80,7 @@ export default new Vuex.Store({
       await db.collection('users').doc(firebase.auth().currentUser.uid)
       .onSnapshot(
         (querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            commit("setProfileInfo", doc)
-          });
+            commit("setProfileInfo", querySnapshot)
       })
       // const dbResults = await dataBase.get()
     },
