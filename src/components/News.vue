@@ -1,5 +1,8 @@
 <template>
   <div class="warraper">
+    <question :question="'Bạn có chắc chắn muốn xóa bài viết?'" v-show="modalQuestion"
+      v-on:AnswerQuestion="answerQuestion"
+    ></question>
     <div class="home-main-head" v-show="this.$store.state.userUID == this.user.userUID">
       <div class="avatar">
         <img :src="this.$store.state.userPhotoURL">
@@ -113,7 +116,9 @@
               <i class="far fa-edit"></i>
               <span> Chỉnh sửa bài viết</span>
             </li>
-            <li class="setting-item" @click="deletePost(post.postID)">
+            <li class="setting-item" @click="deletePost(post.postID)" 
+              v-show="post.userUID == $store.state.userUID"
+            >
               <i class="far fa-trash-alt"></i>
               <span>Xóa bài viết</span>
             </li>
@@ -192,9 +197,9 @@
 
 <script>
 import firebase from 'firebase/app'
-// import firebase from 'firebase/app'
 import "firebase/auth";
 import db from '../firebase/index'
+import Question from '../components/Question.vue'
 export default {
   name : 'News',
   data () {
@@ -203,13 +208,30 @@ export default {
       text : '',
       photo : '',
       isPosting : false,
-      turnOnSetting : ''
+      turnOnSetting : '',
+      modalQuestion: false,
+      deletePostID : ''
     }
+  },
+  components : {
+    Question,
   },
   props : [
     'posts','user'
   ],
   methods: {
+    async answerQuestion(payload) {
+      if(payload) {
+        await db.collection("posts").doc(this.deletePostID).delete().then(() => {
+          console.log("Document successfully deleted!");
+        }).catch((error) => {
+          console.error("Error removing document: ", error);
+        });
+        this.modalQuestion = false
+      } else {
+        this.modalQuestion = false
+      }
+    },
     clickOutSide() {
       this.activeCreatePost = false
       this.turnOnSetting = ''
@@ -281,11 +303,9 @@ export default {
       this.$refs.input[num].textContent = ''
     },
     async deletePost (postID) {
-      await db.collection("posts").doc(postID).delete().then(() => {
-        console.log("Document successfully deleted!");
-      }).catch((error) => {
-        console.error("Error removing document: ", error);
-      });
+      this.deletePostID = postID
+      this.turnOnSetting = false
+      this.modalQuestion = true
     }
   }
 }
