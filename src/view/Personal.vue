@@ -90,9 +90,10 @@
 </template>
 
 <script>
-// import firebase from 'firebase/app'
+import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '../firebase/index'
+import "firebase/storage"
 import TimeLine from '../components/Personal/TimeLine.vue'
 import Intro from '../components/Personal/Intro.vue'
 import Friends from '../components/Personal/Friends.vue'
@@ -117,6 +118,8 @@ export default {
     return {
       activeNav : ' ',
       previewImage : '',
+      fileCoverImage: '',
+      fileAvatar : '',
       userPhoto : '',
       activeSettings: false,
       user : {}
@@ -140,6 +143,9 @@ export default {
       this.$router.push("/" + this.$store.state.userUID+ "/"+ name)
     },
     fileSelected (e) {
+      //get file upload
+      this.fileCoverImage = e.target.files[0];
+      // preview file uploaded in screen
       const image = e.target.files[0];
       const reader = new FileReader();
       reader.readAsDataURL(image);
@@ -147,29 +153,39 @@ export default {
         this.previewImage = e.target.result;
       }
     },
-    userPhotoSelected (e){
-      const image = e.target.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(image);
-      reader.onload = e =>{
-        this.userPhoto = e.target.result;
-        db.collection("users").doc(this.user.userUID).update({
-          userPhotoURL : this.userPhoto
-        }); 
-        db.collection("posts").where('userUID', '==', this.user.userUID)
-        .get()
-        .then(snapshots => {
-          if (snapshots.size > 0) {
-            console.log(snapshots)
-            snapshots.forEach(orderItem => {
-              console.log(orderItem.id)
-              db.collection("posts").doc(orderItem.id).update ({ 
-                userPhotoURL : this.userPhoto 
-              })
+    async userPhotoSelected (e){
+      //get file avatar
+      this.fileAvatar =  e.target.files[0];
+      // const reader = new FileReader();
+      // reader.readAsDataURL(this.fileAvatar );
+      // reader.onload = e =>{
+      //   this.userPhoto = e.target.result;
+      // }
+      // push it up storage
+      const imageName = this.fileAvatar.name
+      const storageRef = firebase.storage().ref();
+      var imagesRef = storageRef.child(`avatar/${imageName}`);
+      await imagesRef.put(this.fileAvatar).then(() => {
+        console.log('Uploaded a blob or file!');
+        this.fileAvatar = ''
+      });
+      // update userPhotoURL in currentUser
+      const downloadURL = await imagesRef.getDownloadURL();
+      db.collection("users").doc(this.user.userUID).update({
+        userPhotoURL : downloadURL
+      }); 
+      // update userPhotoURl in all posts of currentUser
+      db.collection("posts").where('userUID', '==', this.user.userUID)
+      .get()
+      .then(snapshots => {
+        if (snapshots.size > 0) {
+          snapshots.forEach(orderItem => {
+            db.collection("posts").doc(orderItem.id).update ({ 
+              userPhotoURL : downloadURL
             })
-          }
-        })
-      }
+          })
+        }
+      })
     },
     coverImage () {
       if(this.previewImage == '') {
@@ -181,12 +197,23 @@ export default {
       this.previewImage = ''
     },
     async saveCoverImage () {
-      this.coverImageURL = this.previewImage
-      this.previewImage = ''
+      // push coverIamge up storage
+      // this.coverImageURL = this.previewImage
+      const imageName = this.fileCoverImage.name
+      const storageRef = firebase.storage().ref();
+      var imagesRef = storageRef.child(`coverImages/${imageName}`);
+      await imagesRef.put(this.fileCoverImage).then((snapshot) => {
+        console.log('Uploaded a blob or file!');
+        console.log(snapshot)
+      });
+      const downloadURL = await imagesRef.getDownloadURL();
+      // update coverImage of currentUser in firestore
       const dataBase = db.collection("users").doc(this.user.userUID);
       await dataBase.update({
-        coverImageURL : this.coverImageURL
+        coverImageURL : downloadURL
       }); 
+      this.previewImage = ''
+      this.fileCoverImage = ''
     },
     async newMessage (user) {
       const database = db.collection("messages").doc()
@@ -202,6 +229,7 @@ export default {
           }
         ],
       })
+      this.$store.dispatch("getAllMessages")
       this.$router.push('/chat')
     }
   }

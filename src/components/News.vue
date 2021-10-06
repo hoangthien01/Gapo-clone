@@ -85,7 +85,7 @@
     <div class="home-main-content">
       <div class="post-item" v-for="(post,index) in  posts" :key="index">
         <div class="post-item__head">
-          <div class="user-image">
+          <div class="user-image" @click="$router.push('/'+ post.userUID)">
             <img :src="post.userPhotoURL" alt="" srcset="">
           </div>
           <div>
@@ -113,7 +113,7 @@
               <i class="far fa-edit"></i>
               <span> Chỉnh sửa bài viết</span>
             </li>
-            <li class="setting-item">
+            <li class="setting-item" @click="deletePost(post.postID)">
               <i class="far fa-trash-alt"></i>
               <span>Xóa bài viết</span>
             </li>
@@ -270,6 +270,13 @@ export default {
         comments: firebase.firestore.FieldValue.arrayUnion(comment),
       });
       this.$refs.input[num].textContent = ''
+    },
+    async deletePost (postID) {
+      await db.collection("posts").doc(postID).delete().then(() => {
+    console.log("Document successfully deleted!");
+}).catch((error) => {
+    console.error("Error removing document: ", error);
+});
     }
   }
 }
@@ -565,7 +572,7 @@ export default {
           border-radius: 8px;
           list-style: none;
           box-shadow: 0 0 8px rgba(0,0,0,0.5);
-          z-index: 999;
+          z-index: 9999;
 
           .setting-item {
             padding: 5px 16px;

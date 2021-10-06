@@ -4,6 +4,7 @@ import "firebase/firestore"
 var firebaseConfig = {
   apiKey: "AIzaSyCBaAzd43cCCv8AOdiRw6FE7OQ696rZsVw",
   authDomain: "gapo-ca56b.firebaseapp.com",
+  databaseURL: "https://gapo-ca56b-default-rtdb.firebaseio.com",
   projectId: "gapo-ca56b",
   storageBucket: "gapo-ca56b.appspot.com",
   messagingSenderId: "190732512084",

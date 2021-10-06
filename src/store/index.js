@@ -24,7 +24,8 @@ export default new Vuex.Store({
     dateOfBirth: '',
     gender: '',
 
-    posts: []
+    posts: [],
+    messages: [],
 
   },
   getters: {
@@ -110,6 +111,32 @@ export default new Vuex.Store({
           });
       })
     },
+
+    async getAllMessages ({state}) {
+      alert("ab")
+      await db.collection("messages")
+      .onSnapshot(
+        (querySnapshot) => {
+          state.messages = []
+          querySnapshot.forEach((doc) => {
+              state.messages.push(doc.data());
+              console.log(state.messages)
+          });
+      })
+      // setTimeout(() => {
+      //   this.getMessage(this.messages[0].messageId)
+      // },1000)
+    }
+
+    // async getMessage (messageId) {
+    //   await db.collection("messages").doc(messageId)
+    //   .onSnapshot(
+    //     (querySnapshot) => {
+    //       this.message = {}
+    //       this.message= querySnapshot.data();
+    //   })
+    //   this.chatWithUser = (await db.collection("messages").doc(messageId).get()).data().user1
+    // },
 
   },
   modules: {

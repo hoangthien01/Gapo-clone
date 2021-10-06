@@ -157,27 +157,22 @@ export default {
       settingSystemActive : false,
       libSystemActive : false,
       text : '',
-      messages : [],
       message : {},
       chatWithUser : {}
     }
   },
+  computed : {
+    messages () {
+      return this.$store.state.messages
+    }
+  },
   async created () {
-    await db.collection("messages")
-      .onSnapshot(
-        (querySnapshot) => {
-          this.messages = []
-          querySnapshot.forEach((doc) => {
-              this.messages.push(doc.data());
-          });
-      })
-      setTimeout(() => {
-        this.getMessage(this.messages[0].messageId)
-      },1000)
+    this.$store.dispatch("getAllMessages")
   },
   updated() {
       this.$refs['scrollable'].lastElementChild.scrollIntoView(false)
   },
+  
   methods : {
     async getMessage (messageId) {
       await db.collection("messages").doc(messageId)
