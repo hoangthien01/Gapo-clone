@@ -2,10 +2,10 @@
   <div class="warraper">
     <div class="home-main-head" v-show="this.$store.state.userUID == this.user.userUID">
       <div class="avatar">
-        <img :src="this.$store.state.userPhotoURL" alt="" srcset="">
+        <img :src="this.$store.state.userPhotoURL">
       </div>
       <button class="create-btn" @click="() => this.activeCreatePost = true">Đăng bài viết</button>
-      <i class="fas fa-image"></i>
+      <img class="upload-image" src="../assets/picture-video.svg" @click="() => this.activeCreatePost = true">
       <div class="overlay" @click="clickOutSide" v-show="activeCreatePost"></div>
       <div class="create-post" v-show="activeCreatePost">
         <div class="create-post-head">
@@ -201,7 +201,7 @@ export default {
     return {
       activeCreatePost : false,
       text : '',
-      photoURL : '',
+      photo : '',
       isPosting : false,
       turnOnSetting : ''
     }
@@ -216,6 +216,14 @@ export default {
     },
     async postStatus() {
       this.isPosting = true
+      const imageName = this.photo.name
+      const storageRef = firebase.storage().ref();
+      var imagesRef = storageRef.child(`postImages/${imageName}`);
+      await imagesRef.put(this.photo).then(() => {
+        console.log('Uploaded a blob or file!');
+        this.photo = ''
+      });
+      const downloadURL = await imagesRef.getDownloadURL();
       const timestamp = await Date.now();
       const dataBase = await db.collection("posts").doc();
       await dataBase.set({
@@ -225,7 +233,7 @@ export default {
         userName : this.$store.state.userName,
         date : timestamp,
         text: this.text,
-        photoURL: this.photoURL,
+        photoURL: downloadURL,
         liked: 0,
         listUserLiked: [],
         comments: [],
@@ -234,19 +242,20 @@ export default {
       this.activeCreatePost = false
       this.isPosting = false
       this.text = ''
-      this.photoURL = ''
+      this.photo = ''
     },
     photoURLSelected (e) {
-      const image = e.target.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(image);
-      reader.onload = e =>{
-        this.photoURL = e.target.result;
-      }
+      // const image = e.target.files[0];
+      // const reader = new FileReader();
+      // reader.readAsDataURL(image);
+      // reader.onload = e =>{
+      //   this.photoURL = e.target.result;
+      // }
+      this.photo =  e.target.files[0];
     },
     async likePost(post) {
       const dataBase = await db.collection("posts").doc(post.postID);
-      if(post.listUserLiked.indexOf(this.$store.state.userUID)) {
+      if(post.listUserLiked.indexOf(this.$store.state.userUID) == -1) {
         await dataBase.update({
           liked : post.liked +1,
           listUserLiked: firebase.firestore.FieldValue.arrayUnion(this.$store.state.userUID),
@@ -273,10 +282,10 @@ export default {
     },
     async deletePost (postID) {
       await db.collection("posts").doc(postID).delete().then(() => {
-    console.log("Document successfully deleted!");
-}).catch((error) => {
-    console.error("Error removing document: ", error);
-});
+        console.log("Document successfully deleted!");
+      }).catch((error) => {
+        console.error("Error removing document: ", error);
+      });
     }
   }
 }
@@ -346,8 +355,8 @@ export default {
       }
     }
 
-    .fa-image {
-      font-size: 22px;
+    .upload-image {
+      width: 25px;
       color: #6fbe44;
       cursor: pointer;
     }
