@@ -5,6 +5,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '../firebase/index'
 import post from './module/post'
+import user from './module/user'
 
 Vue.use(Vuex)
 
@@ -70,6 +71,17 @@ export default new Vuex.Store({
       state.userPhotoURL = doc.data().userPhotoURL
       state.coverImageURL = doc.data().coverImageURL
     },
+    setDefaultProfileInfo(state) {
+      state.user = {}
+      state.userUID = ''
+      state.userName = ''
+      state.passWord = ''
+      state.dateOfBirth = ''
+      state.gender = ''
+      state.phoneNumber = ''
+      state.userPhotoURL = ''
+      state.coverImageURL = ''
+    },
     setUserPhotoPreview(state) {
       state.userPhotoPreview = !state.userPhotoPreview
     }
@@ -111,35 +123,9 @@ export default new Vuex.Store({
           });
       })
     },
-
-    async getAllMessages ({state}) {
-      alert("ab")
-      await db.collection("messages")
-      .onSnapshot(
-        (querySnapshot) => {
-          state.messages = []
-          querySnapshot.forEach((doc) => {
-              state.messages.push(doc.data());
-              console.log(state.messages)
-          });
-      })
-      // setTimeout(() => {
-      //   this.getMessage(this.messages[0].messageId)
-      // },1000)
-    }
-
-    // async getMessage (messageId) {
-    //   await db.collection("messages").doc(messageId)
-    //   .onSnapshot(
-    //     (querySnapshot) => {
-    //       this.message = {}
-    //       this.message= querySnapshot.data();
-    //   })
-    //   this.chatWithUser = (await db.collection("messages").doc(messageId).get()).data().user1
-    // },
-
   },
   modules: {
-    post
+    post,
+    user
   }
 })

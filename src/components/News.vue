@@ -128,7 +128,7 @@
           <p>{{post.text}}</p>
         </div>
         <div class="post-item__attachment" v-show="post.photoURL != ''">
-          <img :src="post.photoURL" alt="" srcset="">
+          <img :src="post.photoURL" alt="" srcset=""  v-show="post.photoURL != ''">
         </div>
         <div class="post-item__stats" v-show="post.numberComments != 0 || post.liked != 0">
           <div class="react">
@@ -239,13 +239,16 @@ export default {
     async postStatus() {
       this.isPosting = true
       const imageName = this.photo.name
-      const storageRef = firebase.storage().ref();
-      var imagesRef = storageRef.child(`postImages/${imageName}`);
-      await imagesRef.put(this.photo).then(() => {
-        console.log('Uploaded a blob or file!');
-        this.photo = ''
-      });
-      const downloadURL = await imagesRef.getDownloadURL();
+      let downloadURL = '';
+      if(this.photo != '') {
+        const storageRef = firebase.storage().ref();
+        var imagesRef = storageRef.child(`postImages/${imageName}`);
+        await imagesRef.put(this.photo).then(() => {
+          console.log('Uploaded a blob or file!');
+          this.photo = ''
+        });
+        downloadURL = await imagesRef.getDownloadURL();
+      }
       const timestamp = await Date.now();
       const dataBase = await db.collection("posts").doc();
       await dataBase.set({

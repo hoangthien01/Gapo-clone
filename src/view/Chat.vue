@@ -157,32 +157,28 @@ export default {
       settingSystemActive : false,
       libSystemActive : false,
       text : '',
-      message : {},
       chatWithUser : {}
     }
   },
   computed : {
     messages () {
-      return this.$store.state.messages
+      return this.$store.state.user.messages
+    },
+    message () {
+      return this.$store.state.user.message
     }
   },
   async created () {
-    this.$store.dispatch("getAllMessages")
+    this.$store.dispatch("user/getAllMessages")
   },
   updated() {
-      this.$refs['scrollable'].lastElementChild.scrollIntoView(false)
+    this.$refs['scrollable'].lastElementChild.scrollIntoView(false)
   },
   
   methods : {
     async getMessage (messageId) {
-      await db.collection("messages").doc(messageId)
-      .onSnapshot(
-        (querySnapshot) => {
-          this.message = {}
-          this.message= querySnapshot.data();
-      })
-      this.chatWithUser = (await db.collection("messages").doc(messageId).get()).data().user1
-      console.log(this.chatWithUser)
+      this.$store.dispatch("user/getMessage",messageId)
+      console.log(this.messages)
     },
     async sendMessage() {
       await db.collection("messages").doc(this.message.messageId)
